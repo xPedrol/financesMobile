@@ -1,38 +1,15 @@
-import {StatusBar, StyleSheet, View} from "react-native";
+import {Box, useColorModeValue} from "native-base";
+import Header from "./Header";
 
 export default function Layout({children}) {
-    const initialPadding = StatusBar.currentHeight || 22;
-    const styles = StyleSheet.create({
-        body: {
-            display: 'flex',
-            flex: 1,
-            opacity: 1,
-            paddingTop: initialPadding,
-        },
-        container: {
-            paddingLeft: 10,
-            paddingRight: 10,
-        },
-        bottomBar: {
-            height: 70,
-            width: '100%',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-        },
-        barButton: {
-            borderRadius: 15,
-        }
-    });
+    const bg = useColorModeValue("warmGray.50", "#111111");
+
     return (
-        <View style={styles.body}>
-            <View style={styles.container}>
+        <Box bg={bg}>
+            <Header title={'Wise Ways'}/>
+            <Box h={'100%'} mt={'50px'} mx="4">
                 {children}
-            </View>
-        </View>
+            </Box>
+        </Box>
     );
 }
