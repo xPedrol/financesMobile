@@ -1,47 +1,130 @@
 import Layout from "../../components/Layout";
 import {
+    Box,
     Button,
     Flex,
     FormControl,
+    Icon,
     Input,
+    Pressable,
     Stack,
     Text,
     useColorModeValue,
+    useToast,
     VStack,
     WarningOutlineIcon
 } from "native-base";
+import Header from "../../components/Header";
+import {Controller, useForm} from "react-hook-form";
+import {useAuth} from "../../hooks/useAuth";
+import {MaterialIcons} from "@expo/vector-icons";
+import {useState} from "react";
 
+type formData = {
+    email: string;
+    password: string;
+}
 export default function Login({navigation}) {
-    const titleBg = useColorModeValue('gray.300', '#4a5568');
+    const titleBg = useColorModeValue('gray.200', '#1e1d1d');
+    const {signIn} = useAuth();
+    const [loginLoading, setLoginLoading] = useState<boolean>(false);
+    const {control, handleSubmit, formState: {errors}} = useForm<formData>();
+    const [show, setShow] = useState(false);
+    const toast = useToast();
+    const onSubmit = async (data: formData) => {
+        setLoginLoading(true);
+        signIn(data).then((res) => {
+            toast.show({
+                render: () => {
+                    return <Box bg="green.500" px="2" py="1" rounded="sm" mb={5}>
+                        !!!!!!!!
+                    </Box>;
+                }
+            });
+        }).catch((err) => {
+            if (
+                err &&
+                err.response &&
+                err.response.data &&
+                err.response.data.showError
+            ) {
+                toast.show({
+                    render: () => {
+                        return <Box bg="red.500" px="2" py="1" rounded="sm" mb={5}>
+                            {err.response.data.message}
+                        </Box>;
+                    }
+                });
+            } else {
+                toast.show({
+                    render: () => {
+                        return <Box bg="red.500" px="2" py="1" rounded="sm" mb={5}>
+                            Something went wrong. Please try again later.
+                        </Box>;
+                    }
+                });
+            }
+        }).finally(() => setLoginLoading(false));
+    };
     return (
-        <Layout>
-            <Flex justify={'center'} h={'50%'}>
-                <Text textAlign={'center'} fontSize={'32px'} fontFamily={'Inter800'} letterSpacing={'-.049375rem'}>
+        <Layout h={'100%'} header={<Header title={'Wise Ways'}/>}>
+            <Flex justify={'center'} flex={1} mt={'-120px'}>
+                <Text textAlign={'center'} fontSize={'22px'} fontFamily={'Inter800'} letterSpacing={'-.049375rem'}>
                     <Text>Log in to </Text>
-                    <Text bg={titleBg} ml={'5px'} p={'5px'} borderRadius={'xl'}>Finances</Text>
-                    <Text bg={titleBg} ml={'5px'} py={'5px'}
-                          px={'20px'} borderRadius={'xl'}>!</Text>
+                    <Text>Wise Ways</Text>
+                    <Text>!</Text>
                 </Text>
 
                 <VStack space={4} alignItems="stretch" mt={'25px'}>
-                    <FormControl isRequired>
+                    <FormControl isRequired isInvalid={'email' in errors}>
                         <Stack>
-                            <Input type="text" placeholder="Email"/>
+                            <Controller
+                                rules={{
+                                    required: true,
+                                }}
+                                control={control}
+                                render={({field: {onChange, onBlur, value}}) => (
+                                    <Input onBlur={onBlur}
+                                           onChangeText={onChange}
+                                           value={value} type="text" placeholder="Email" variant="outline" size={'md'}/>
+                                )}
+                                name="email"
+                                defaultValue=""
+                            />
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs"/>}>
-                                Atleast 6 characters are required.
+                                Required Field
                             </FormControl.ErrorMessage>
                         </Stack>
                     </FormControl>
-                    <FormControl isRequired>
+                    <FormControl isRequired isInvalid={'password' in errors}>
                         <Stack>
-                            <Input type="password" placeholder="Password"/>
+                            <Controller
+                                rules={{
+                                    required: true,
+                                }}
+                                control={control}
+                                render={({field: {onChange, onBlur, value}}) => (
+                                    <Input onBlur={onBlur}
+                                           onChangeText={onChange}
+                                           value={value} variant="outline"
+                                           size={'md'}
+                                           type={show ? "text" : "password"}
+                                           InputRightElement={<Pressable onPress={() => setShow(!show)}>
+                                               <Icon as={<MaterialIcons name={show ? "visibility" : "visibility-off"}/>}
+                                                     size={5} mr="2" color="muted.400"/>
+
+                                           </Pressable>} placeholder="Password"/>
+                                )}
+                                name="password"
+                                defaultValue=""
+                            />
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs"/>}>
-                                Atleast 6 characters are required.
+                                Required Field
                             </FormControl.ErrorMessage>
                         </Stack>
                     </FormControl>
                     <Flex justify={'flex-end'}>
-                        <Button bg={'#4a5568'} onPress={() => console.log("hello world")}>Login</Button>
+                        <Button onPress={handleSubmit(onSubmit)} isLoading={loginLoading}>Login</Button>
                     </Flex>
                 </VStack>
             </Flex>

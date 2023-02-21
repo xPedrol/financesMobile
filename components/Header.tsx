@@ -1,5 +1,4 @@
-import {Flex, Icon, Text, useColorMode} from "native-base";
-import {AntDesign} from "@expo/vector-icons";
+import {Button, Flex, Text, useColorMode, useColorModeValue} from "native-base";
 import {useRef} from "react";
 import {StatusBar} from "react-native";
 
@@ -8,19 +7,36 @@ type HeaderProps = {
     goBack?: boolean
     goBackTo?: string
 };
-const Header = ({title}:HeaderProps) => {
+const Header = ({title}: HeaderProps) => {
     const {
-        toggleColorMode
+        colorMode,
+        toggleColorMode,
     } = useColorMode();
-    const initialPadding =useRef<number>(StatusBar.currentHeight+5 || 22);
+    const iconColor = useColorModeValue('gray.600', 'gray.400');
+    const bg = useColorModeValue('white', '#1e1d1d');
+    const btnHeaderColor = useColorModeValue('gray.900', 'gray.100');
+    const initialPadding = useRef<number>(StatusBar.currentHeight || 22);
     return (
         <>
-            <Flex px={'15px'} pb={'17px'} paddingTop={`${initialPadding.current}px`} direction="row" align="center" justify={'space-between'} bg={'#111111'}>
+            <StatusBar barStyle={colorMode === 'light' ? 'dark-content' : 'light-content'} backgroundColor={bg}/>
+            <Flex bg={bg} px={'20px'} h={'80px'} direction="row" align="center" justify={'space-between'}>
                 <Text fontSize={'15px'} fontFamily={'Inter900'}>{title}</Text>
-                <Icon as={AntDesign} name="user" size="lg" color={'gray.200'}/>
+                <Flex direction={'row'}>
+                    {/*<Icon mr={'30px'} as={Ionicons} name={colorMode==='light'?'ios-sunny-outline':'ios-moon-outline'} size="3xl" color={iconColor} onPress={toggleColorMode}/>*/}
+                    {/*<Icon as={AntDesign} name="user" size="3xl" color={iconColor}/>*/}
+                    <Button mr={'7px'} size={'sm'} colorScheme={'text'} variant={'outline'} onPress={toggleColorMode}
+                            _text={{
+                                color: btnHeaderColor,
+                            }}
+                            borderColor={btnHeaderColor}>Theme</Button>
+                    <Button size={'sm'} colorScheme={'text'} variant={'outline'}
+                            onPress={() => console.log("hello world")} _text={{
+                        color: btnHeaderColor,
+                    }} borderColor={btnHeaderColor}>User</Button>
+                </Flex>
             </Flex>
         </>
     );
-}
+};
 
 export default Header;

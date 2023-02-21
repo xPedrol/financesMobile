@@ -1,11 +1,13 @@
 {
   "expo": {
-    "name": "financesMobile",
-    "slug": "financesMobile",
+    "name": "Wise Ways",
+    "slug": "wise-ways",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "backgroundColor": "#ffffff",
+    "primaryColor": "#ffffff",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -18,16 +20,25 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.gamerulew.financesMobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b7507b13-b92e-4ef4-8951-bb1b698e7be2"
+      }
     }
   }
 }
