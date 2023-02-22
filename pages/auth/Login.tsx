@@ -19,6 +19,7 @@ import {Controller, useForm} from "react-hook-form";
 import {useAuth} from "../../hooks/useAuth";
 import {MaterialIcons} from "@expo/vector-icons";
 import {useState} from "react";
+import {Keyboard} from "react-native";
 
 type formData = {
     email: string;
@@ -34,13 +35,9 @@ export default function Login({navigation}) {
     const onSubmit = async (data: formData) => {
         setLoginLoading(true);
         signIn(data).then((res) => {
-            toast.show({
-                render: () => {
-                    return <Box bg="green.500" px="2" py="1" rounded="sm" mb={5}>
-                        !!!!!!!!
-                    </Box>;
-                }
-            });
+            if (res.data.token) {
+                navigation.navigate('Home');
+            }
         }).catch((err) => {
             if (
                 err &&
@@ -56,6 +53,7 @@ export default function Login({navigation}) {
                     }
                 });
             } else {
+                console.error(err)
                 toast.show({
                     render: () => {
                         return <Box bg="red.500" px="2" py="1" rounded="sm" mb={5}>
@@ -64,11 +62,14 @@ export default function Login({navigation}) {
                     }
                 });
             }
-        }).finally(() => setLoginLoading(false));
+        }).finally(() => {
+            Keyboard.dismiss();
+            setLoginLoading(false);
+        });
     };
     return (
         <Layout h={'100%'} header={<Header title={'Wise Ways'}/>}>
-            <Flex justify={'center'} flex={1} mt={'-120px'}>
+            <Flex justify={'flex-start'} mt={'20px'} flex={1}>
                 <Text textAlign={'center'} fontSize={'22px'} fontFamily={'Inter800'} letterSpacing={'-.049375rem'}>
                     <Text>Log in to </Text>
                     <Text>Wise Ways</Text>

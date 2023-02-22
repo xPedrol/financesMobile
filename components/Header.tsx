@@ -1,6 +1,7 @@
 import {Button, Flex, Text, useColorMode, useColorModeValue} from "native-base";
 import {useRef} from "react";
 import {StatusBar} from "react-native";
+import {useAuth} from "../hooks/useAuth";
 
 type HeaderProps = {
     title: string
@@ -16,6 +17,7 @@ const Header = ({title}: HeaderProps) => {
     const bg = useColorModeValue('white', '#1e1d1d');
     const btnHeaderColor = useColorModeValue('gray.900', 'gray.100');
     const initialPadding = useRef<number>(StatusBar.currentHeight || 22);
+    const {getToken} = useAuth();
     return (
         <>
             <StatusBar barStyle={colorMode === 'light' ? 'dark-content' : 'light-content'} backgroundColor={bg}/>
@@ -29,10 +31,12 @@ const Header = ({title}: HeaderProps) => {
                                 color: btnHeaderColor,
                             }}
                             borderColor={btnHeaderColor}>Theme</Button>
-                    <Button size={'sm'} colorScheme={'text'} variant={'outline'}
-                            onPress={() => console.log("hello world")} _text={{
-                        color: btnHeaderColor,
-                    }} borderColor={btnHeaderColor}>User</Button>
+                    {getToken() &&
+                        <Button size={'sm'} colorScheme={'text'} variant={'outline'}
+                                onPress={() => console.log("hello world")} _text={{
+                            color: btnHeaderColor,
+                        }} borderColor={btnHeaderColor}>User</Button>
+                    }
                 </Flex>
             </Flex>
         </>

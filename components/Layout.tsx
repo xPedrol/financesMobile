@@ -6,7 +6,7 @@ export default function Layout({children, header, ...props}) {
     return (
         <Box bg={bg} {...props}>
             {header}
-            <Box h={'100%'} mx="4">
+            <Box h={'100%'} mx="4" mt={'30px'}>
                 {children}
             </Box>
         </Box>

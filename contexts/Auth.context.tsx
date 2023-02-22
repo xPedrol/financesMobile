@@ -51,7 +51,6 @@ export default function AuthProvider() {
 
             try {
                 userToken = await SecureStore.getItemAsync(AUTH_TOKEN);
-                console.log('userToken', userToken);
                 dispatch({type: 'RESTORE_TOKEN', token: userToken});
             } catch (e) {
                 throw e;
@@ -67,8 +66,8 @@ export default function AuthProvider() {
             signIn: async (data) => {
                 try {
                     const result = await apiLogin(data);
-                    console.log('result.data.token', result.data.token);
-                    // dispatch({type: 'SIGN_IN', token: result.data.token});
+                    await SecureStore.setItemAsync(AUTH_TOKEN, result.data.token);
+                    dispatch({type: 'SIGN_IN', token: result.data.token});
                     return result;
                 } catch (e) {
                     // console.error(e);
@@ -84,10 +83,16 @@ export default function AuthProvider() {
 
                 dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
             },
+            getToken: async () => {
+                try {
+                    return await SecureStore.getItemAsync(AUTH_TOKEN);
+                } catch (e) {
+                    throw e;
+                }
+            }
         }),
         []
     );
-
     return (
         <AuthContext.Provider value={authContext}>
             <NavigationContainer>
