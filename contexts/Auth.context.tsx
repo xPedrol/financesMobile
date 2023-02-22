@@ -2,17 +2,20 @@ import * as SecureStore from 'expo-secure-store';
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import {NavigationContainer} from "@react-navigation/native";
-import {Stack} from "native-base";
+import {Stack, useToast} from "native-base";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {useEffect, useMemo, useReducer} from "react";
 import Home from "../pages/Home";
 import {apiLogin} from "../services/auth.service";
 import {AuthContext} from "../hooks/useAuth";
 import {AUTH_TOKEN} from "@env";
+import axiosClient from "../config/httpRequest.config";
+import LoadingPage from "../components/LoadingPage";
 
 
 export default function AuthProvider() {
     const Stack = createNativeStackNavigator();
+    const toast = useToast();
 
     const [state, dispatch] = useReducer(
         (prevState, action) => {
@@ -21,7 +24,7 @@ export default function AuthProvider() {
                     return {
                         ...prevState,
                         userToken: action.token,
-                        isLoading: false,
+                        isLoading: true,
                     };
                 case 'SIGN_IN':
                     return {
@@ -35,6 +38,11 @@ export default function AuthProvider() {
                         isSignout: true,
                         userToken: null,
                     };
+                case 'SET_LOADING':
+                    return {
+                        ...prevState,
+                        isLoading: action.isLoading,
+                    };
             }
         },
         {
@@ -44,6 +52,7 @@ export default function AuthProvider() {
         }
     );
 
+
     useEffect(() => {
         // Fetch the token from storage then navigate to our appropriate place
         const bootstrapAsync = async () => {
@@ -51,6 +60,31 @@ export default function AuthProvider() {
 
             try {
                 userToken = await SecureStore.getItemAsync(AUTH_TOKEN);
+                console.log('userToken',userToken);
+                // setIsLoading(true);
+                dispatch({type: 'SET_LOADING', isLoading: true});
+                axiosClient
+                    .get("/me")
+                    .then((response) => {
+                        if (response.data) {
+                            console.log(response.data);
+                            // setUser(response.data);
+                        } else {
+                            // setUser(null);
+                        }
+                    })
+                    .catch((err) => {
+                        // setUser(null);
+                        if(state.userToken) {
+                            toast.show({
+                                title: `Erro ao carregar usuário`
+                            });
+                            if (err && err.response && err.response.status === 403) {
+                                authContext.signOut();
+                            }
+                        }
+                    })
+                    .finally(() => dispatch({type: 'SET_LOADING', isLoading: false}));
                 dispatch({type: 'RESTORE_TOKEN', token: userToken});
             } catch (e) {
                 throw e;
@@ -74,7 +108,10 @@ export default function AuthProvider() {
                     throw e;
                 }
             },
-            signOut: () => dispatch({type: 'SIGN_OUT'}),
+            signOut: async () => {
+                await SecureStore.deleteItemAsync(AUTH_TOKEN);
+                dispatch({type: 'SIGN_OUT'})
+            },
             signUp: async (data) => {
                 // In a production app, we need to send user data to server and get a token
                 // We will also need to handle errors if sign up failed
@@ -83,20 +120,22 @@ export default function AuthProvider() {
 
                 dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
             },
-            getToken: async () => {
+            getToken: () => {
                 try {
-                    return await SecureStore.getItemAsync(AUTH_TOKEN);
+                    return state.userToken
                 } catch (e) {
                     throw e;
                 }
             }
         }),
-        []
+        [state.userToken]
     );
     return (
         <AuthContext.Provider value={authContext}>
-            <NavigationContainer>
-                {state.userToken == null ? (
+            {state.isLoading ? (
+                <LoadingPage/>
+            ) : <NavigationContainer>
+                {state.userToken === null ? (
                     <Stack.Navigator initialRouteName="Login" screenOptions={{animation: "none", headerShown: false}}>
                         <Stack.Screen name="Login" component={Login}/>
                         <Stack.Screen name="Register" component={Register}/>
@@ -106,7 +145,7 @@ export default function AuthProvider() {
                         <Stack.Screen name="Home" component={Home}/>
                     </Stack.Navigator>
                 )}
-            </NavigationContainer>
+            </NavigationContainer>}
         </AuthContext.Provider>
     );
 }

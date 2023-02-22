@@ -1,14 +1,16 @@
-import {Button, Flex, Text, useColorMode, useColorModeValue} from "native-base";
+import {Actionsheet, Box, Button, Flex, Icon, Text, useColorMode, useColorModeValue, useDisclose} from "native-base";
 import {useRef} from "react";
 import {StatusBar} from "react-native";
 import {useAuth} from "../hooks/useAuth";
+import {MaterialIcons} from "@expo/vector-icons";
 
 type HeaderProps = {
     title: string
+    navigation?: any
     goBack?: boolean
     goBackTo?: string
 };
-const Header = ({title}: HeaderProps) => {
+const Header = ({title,navigation}: HeaderProps) => {
     const {
         colorMode,
         toggleColorMode,
@@ -17,7 +19,27 @@ const Header = ({title}: HeaderProps) => {
     const bg = useColorModeValue('white', '#1e1d1d');
     const btnHeaderColor = useColorModeValue('gray.900', 'gray.100');
     const initialPadding = useRef<number>(StatusBar.currentHeight || 22);
-    const {getToken} = useAuth();
+    const {getToken,signOut:authSignOut} = useAuth();
+    const singOut = async () => {
+        console.log('singOut','navigation')
+        if(navigation){
+            await authSignOut();
+            navigation.navigate('Login');
+        }
+    }
+    const onActionSelect = (index: number) => {
+        if (index === 0) {
+            navigation.navigate('Profile');
+        } else if (index === 1) {
+            singOut();
+        }
+    }
+    const {
+        isOpen,
+        onOpen,
+        onClose
+    } = useDisclose();
+    console.log('getToken()',getToken())
     return (
         <>
             <StatusBar barStyle={colorMode === 'light' ? 'dark-content' : 'light-content'} backgroundColor={bg}/>
@@ -33,12 +55,22 @@ const Header = ({title}: HeaderProps) => {
                             borderColor={btnHeaderColor}>Theme</Button>
                     {getToken() &&
                         <Button size={'sm'} colorScheme={'text'} variant={'outline'}
-                                onPress={() => console.log("hello world")} _text={{
+                                onPress={onOpen} _text={{
                             color: btnHeaderColor,
                         }} borderColor={btnHeaderColor}>User</Button>
                     }
                 </Flex>
             </Flex>
+            <Actionsheet isOpen={isOpen} onClose={onClose}>
+                <Actionsheet.Content>
+                    <Actionsheet.Item startIcon={<Icon as={MaterialIcons} size="6" name="account-circle" />}>
+                        Profile
+                    </Actionsheet.Item>
+                    <Actionsheet.Item onPress={singOut}  startIcon={<Icon as={MaterialIcons} size="6" name="logout" />} >
+                        Logout
+                    </Actionsheet.Item>
+                </Actionsheet.Content>
+            </Actionsheet>
         </>
     );
 };

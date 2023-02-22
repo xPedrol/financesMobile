@@ -10,10 +10,10 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use(async (config: any) => {
     const tokenKey = AUTH_TOKEN as string;
     if(tokenKey) {
-        // // const token = await SecureStore.getItemAsync(tokenKey);
-        // if (token) {
-        //     (config.headers as any)["Authorization"] = token;
-        // }
+        const token = await SecureStore.getItemAsync(tokenKey);
+        if (token) {
+            (config.headers as any)["Authorization"] = token;
+        }
     }
     return config;
 });

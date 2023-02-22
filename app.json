@@ -30,18 +30,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.gamerulew.financesMobile"
+      "package": "com.gamerulew.wiseWays"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "b7507b13-b92e-4ef4-8951-bb1b698e7be2"
+        "projectId": "d1976820-9bfd-4957-8be0-bbfb73f3f1cd"
       }
-    },
-    "plugins": [
-      "expo-build-properties"
-    ]
+    }
   }
 }
