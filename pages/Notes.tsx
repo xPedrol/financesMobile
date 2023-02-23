@@ -4,7 +4,7 @@ import {Box, Text} from "native-base";
 
 export default function Notes({navigation}){
     return (
-        <Layout navigation={navigation} header={<Header title={'Notes'} navigation={navigation}/>}>
+        <Layout header={<Header title={'Notes'}/>}>
             <Box>
                 <Text>Notes</Text>
             </Box>

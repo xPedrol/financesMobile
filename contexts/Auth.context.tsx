@@ -5,17 +5,22 @@ import {NavigationContainer} from "@react-navigation/native";
 import {Stack, useToast} from "native-base";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {useEffect, useMemo, useReducer} from "react";
-import Home from "../pages/Home";
 import {apiLogin} from "../services/auth.service";
 import {AuthContext} from "../hooks/useAuth";
 import {AUTH_TOKEN} from "@env";
 import axiosClient from "../config/httpRequest.config";
 import LoadingPage from "../components/LoadingPage";
+import Home from "../pages/Home";
 import Expenses from "../pages/Expenses";
 import Notes from "../pages/Notes";
 import Tags from "../pages/Tags";
+import ConnectionError from "../pages/ConectionError";
 
-
+type ReducerState = {
+    isLoading: boolean;
+    isSignout: boolean;
+    userToken: string | null;
+}
 export default function AuthProvider() {
     const Stack = createNativeStackNavigator();
     const toast = useToast();
@@ -32,13 +37,13 @@ export default function AuthProvider() {
                 case 'SIGN_IN':
                     return {
                         ...prevState,
-                        isSignout: false,
+                        hasError: false,
                         userToken: action.token,
                     };
                 case 'SIGN_OUT':
                     return {
                         ...prevState,
-                        isSignout: true,
+                        hasError: false,
                         userToken: null,
                     };
                 case 'SET_LOADING':
@@ -46,11 +51,16 @@ export default function AuthProvider() {
                         ...prevState,
                         isLoading: action.isLoading,
                     };
+                case 'SET_ERROR':
+                    return {
+                        ...prevState,
+                        hasError: action.hasError,
+                    };
             }
         },
         {
             isLoading: true,
-            isSignout: false,
+            hasError: false,
             userToken: null,
         }
     );
@@ -69,6 +79,7 @@ export default function AuthProvider() {
                     .get("/me")
                     .then((response) => {
                         if (response.data) {
+                            dispatch({type: 'RESTORE_TOKEN', token: userToken});
                             // setUser(response.data);
                         } else {
                             // setUser(null);
@@ -82,11 +93,12 @@ export default function AuthProvider() {
                             });
                             if (err && err.response && err.response.status === 403) {
                                 authContext.signOut();
+                            }else{
+                                dispatch({type: 'SET_ERROR', hasError: true});
                             }
                         }
                     })
                     .finally(() => dispatch({type: 'SET_LOADING', isLoading: false}));
-                dispatch({type: 'RESTORE_TOKEN', token: userToken});
             } catch (e) {
                 throw e;
                 // Restoring token failed
@@ -131,25 +143,38 @@ export default function AuthProvider() {
         }),
         [state.userToken]
     );
+    const getInitialRouteName = (): string => {
+        if (state.userToken) {
+            if (state.hasError) return 'ConnectionError';
+            return 'Home';
+        } else {
+            return 'Login';
+        }
+    };
     return (
         <AuthContext.Provider value={authContext}>
             {state.isLoading ? (
                 <LoadingPage/>
             ) : <NavigationContainer>
-                {state.userToken === null ? (
-                    <Stack.Navigator initialRouteName="Login" screenOptions={{animation: "none", headerShown: false}}>
-                        <Stack.Screen name="Login" component={Login}/>
-                        <Stack.Screen name="Register" component={Register}/>
-                    </Stack.Navigator>
-                ) : (
-                    <Stack.Navigator initialRouteName="Home" screenOptions={{animation: "none", headerShown: false}}>
-                        <Stack.Screen name="Home" component={Home}/>
-                        <Stack.Screen name="Expenses" component={Expenses}/>
-                        <Stack.Screen name="Notes" component={Notes}/>
-                        <Stack.Screen name="Tags" component={Tags}/>
-                    </Stack.Navigator>
-                )}
-            </NavigationContainer>}
+                <Stack.Navigator initialRouteName={getInitialRouteName()}
+                                 screenOptions={{animation: "none", headerShown: false}}>
+                    {state.userToken === null ? (
+                        <>
+                            <Stack.Screen name="Login" component={Login}/>
+                            <Stack.Screen name="Register" component={Register}/>
+                        </>
+                    ) : (
+                        <>
+                            <Stack.Screen name="Home" component={Home}/>
+                            <Stack.Screen name="Expenses" component={Expenses}/>
+                            <Stack.Screen name="Notes" component={Notes}/>
+                            <Stack.Screen name="Tags" component={Tags}/>
+                        </>
+                    )}
+                    <Stack.Screen name="ConnectionError" component={ConnectionError}/>
+                </Stack.Navigator>
+            </NavigationContainer>
+            }
         </AuthContext.Provider>
     );
 }

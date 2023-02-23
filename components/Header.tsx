@@ -2,27 +2,28 @@ import {Actionsheet, Button, Flex, Icon, Text, useColorMode, useColorModeValue, 
 import {StatusBar} from "react-native";
 import {useAuth} from "../hooks/useAuth";
 import {MaterialIcons} from "@expo/vector-icons";
+import {useNavigation} from "@react-navigation/native";
 
 type HeaderProps = {
     title: string
-    navigation?: any
     goBack?: boolean
     goBackTo?: string
 };
-const Header = ({title,navigation}: HeaderProps) => {
+const Header = ({title}: HeaderProps) => {
     const {
         colorMode,
         toggleColorMode,
     } = useColorMode();
+    const navigation = useNavigation();
     const bg = useColorModeValue('white', '#1e1d1d');
     const btnHeaderColor = useColorModeValue('gray.900', 'gray.100');
-    const {getToken,signOut:authSignOut} = useAuth();
+    const {getToken, signOut: authSignOut} = useAuth();
     const singOut = async () => {
-        if(navigation){
+        if (navigation) {
             await authSignOut();
             navigation.navigate('Login');
         }
-    }
+    };
     const {
         isOpen,
         onOpen,
@@ -49,10 +50,10 @@ const Header = ({title,navigation}: HeaderProps) => {
             </Flex>
             <Actionsheet isOpen={isOpen} onClose={onClose}>
                 <Actionsheet.Content>
-                    <Actionsheet.Item startIcon={<Icon as={MaterialIcons} size="6" name="account-circle" />}>
+                    <Actionsheet.Item startIcon={<Icon as={MaterialIcons} size="6" name="account-circle"/>}>
                         Profile
                     </Actionsheet.Item>
-                    <Actionsheet.Item onPress={singOut}  startIcon={<Icon as={MaterialIcons} size="6" name="logout" />} >
+                    <Actionsheet.Item onPress={singOut} startIcon={<Icon as={MaterialIcons} size="6" name="logout"/>}>
                         Logout
                     </Actionsheet.Item>
                 </Actionsheet.Content>

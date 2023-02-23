@@ -9,18 +9,51 @@ import balance from "../utils/numbersBalance.utils";
 import {MaterialIcons} from "@expo/vector-icons";
 import IExpenseStatistic from "../models/ExpenseStatistic.model";
 import {apiNotesCount} from "../services/note.service";
-import {VictoryAxis, VictoryBar, VictoryChart, VictoryStack, VictoryTheme} from "victory-native";
+import {
+    VictoryAxis,
+    VictoryBar,
+    VictoryChart,
+    VictoryGroup,
+    VictoryLabel,
+    VictoryStack,
+    VictoryTheme
+} from "victory-native";
 import {months} from "../utils/formatDate.utils";
 
-const data = [
-    {quarter: 1, earnings: 13000},
-    {quarter: 2, earnings: 16500},
-    {quarter: 3, earnings: 14250},
-    {quarter: 4, earnings: 19000}
-];
+const NegativeAwareTickLabel = props => {
+    const {
+        datum, // Bar's specific data object
+        y, // Calculated y data value IN SVG SPACE (from top-right corner)
+        dy, // Distance from data's y value to label's y value
+        scale, // Function that converts from data-space to svg-space
+        ...rest // Other props passed to label from Bar
+    } = props;
+
+    return (
+        <VictoryLabel
+            datum={datum} // Shove `datum` back into label. We destructured it from `props` so we'd have it available for a future step
+            y={scale.y(0)} // Set y to the svg-space location of the axis
+            dy={20 * Math.sign(datum.value)} // Change direction of offset based on the datum value
+            {...rest} // Shove the rest of the props into the label
+        />
+    );
+};
 export default function Home({navigation}) {
     const bgBar = useColorModeValue("#0891b2", "#0891b2")
     const textBar = useColorModeValue("black", "white")
+    const victoryBarStyle =  {
+        data: {
+            color:textBar,
+            fill: bgBar,
+            fillOpacity: 1,
+            strokeWidth: 3
+        },
+        labels: {
+            fontSize: 12,
+            padding: 15,
+            fill: textBar
+        }
+    };
     const [expensesStatistic, setExpensesStatistic] = useState<IExpenseStatistic | null>(null);
     const [noteCount, setNoteCount] = useState<number>(0);
     const [monthsBalance, setMonthsBalance] = useState<any | null>(null);
@@ -57,7 +90,7 @@ export default function Home({navigation}) {
         });
     }, []);
     return (
-        <Layout navigation={navigation} header={<Header title={'Home'} navigation={navigation}/>}>
+        <Layout header={<Header title={'Home'}/>}>
             <Box>
                 {expensesStatistic &&
                     <>
@@ -80,39 +113,58 @@ export default function Home({navigation}) {
                     </>
                 }
                 {monthsBalance &&
-                    <ScrollView horizontal={true}>
-                        <View>
-                            <VictoryChart  animate={{
-                                duration: 500,
-                                onLoad: {duration: 1000}
-                            }} width={1000}>
-                                <VictoryBar style={{
-                                    data: {
-                                        color:textBar,
-                                        fill: bgBar,
-                                        fillOpacity: 1,
-                                        strokeWidth: 3
-                                    },
-                                    labels: {
-                                        fontSize: 12,
-                                        fill: textBar
-                                    }
-                                }} labels={({ datum }) => `${datum.value}`} data={monthsBalance} x="month" y="value"/>
-                                <VictoryAxis
-                                    style={{
-                                        axis: { stroke: textBar },
-                                        axisLabel: { fontSize: 18, padding: 30, fill: textBar },
-                                        ticks: { stroke: textBar, size: 5, },
-                                        tickLabels: { fontSize: 12, padding: 5, fill: textBar }
-                                    }} />
-                                <VictoryAxis style={{
-                                    axis: { stroke: "transparent" },
-                                    axisLabel: { fontSize: 18, padding: 30, fill: textBar },
-                                    tickLabels: { fontSize: 12, fill: textBar }
-                                }}  dependentAxis/>
-                            </VictoryChart>
-                        </View>
-                    </ScrollView>
+                    <>
+                        <Text my={'20px'}>Gastos referentes ao ano atual</Text>
+                        <ScrollView horizontal={true}>
+                            <View>
+                                <VictoryChart width={1000}>
+                                    <VictoryGroup data={monthsBalance} x="month" y="value">
+                                        <VictoryBar style={victoryBarStyle} labels={({ datum }) => `${currentFormat(datum.value)}`} x="month" y="value"/>
+                                        <VictoryBar x="month" y="value"
+                                                    labels={({ datum }) => `${datum.month}`}
+                                                    style={victoryBarStyle}
+                                                    labelComponent={<NegativeAwareTickLabel />}
+                                        />
+                                    </VictoryGroup>
+
+                                    <VictoryAxis
+                                        style={{
+                                            tickLabels: { fill: "none" }
+                                        }}
+                                    />
+                                </VictoryChart>
+                                {/*<VictoryChart  animate={{*/}
+                                {/*    duration: 500,*/}
+                                {/*    onLoad: {duration: 1000}*/}
+                                {/*}} width={1000}>*/}
+                                {/*    <VictoryBar style={{*/}
+                                {/*        data: {*/}
+                                {/*            color:textBar,*/}
+                                {/*            fill: bgBar,*/}
+                                {/*            fillOpacity: 1,*/}
+                                {/*            strokeWidth: 3*/}
+                                {/*        },*/}
+                                {/*        labels: {*/}
+                                {/*            fontSize: 12,*/}
+                                {/*            fill: textBar*/}
+                                {/*        }*/}
+                                {/*    }} labels={({ datum }) => `${datum.value}`} data={monthsBalance} x="month" y="value"/>*/}
+                                {/*    <VictoryAxis*/}
+                                {/*        style={{*/}
+                                {/*            axis: { stroke: textBar },*/}
+                                {/*            axisLabel: { fontSize: 18, padding: 30, fill: textBar },*/}
+                                {/*            ticks: { stroke: textBar, size: 5, },*/}
+                                {/*            tickLabels: { fontSize: 12, padding: 5, fill: textBar }*/}
+                                {/*        }} />*/}
+                                {/*    <VictoryAxis style={{*/}
+                                {/*        axis: { stroke: "transparent" },*/}
+                                {/*        axisLabel: { fontSize: 18, padding: 30, fill: textBar },*/}
+                                {/*        tickLabels: { fontSize: 12, fill: textBar }*/}
+                                {/*    }}  dependentAxis/>*/}
+                                {/*</VictoryChart>*/}
+                            </View>
+                        </ScrollView>
+                    </>
                 }
             </Box>
         </Layout>

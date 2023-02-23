@@ -4,7 +4,7 @@ import {Box, Text} from "native-base";
 
 export default function Tags({navigation}){
     return (
-        <Layout navigation={navigation} header={<Header title={'Tags'} navigation={navigation}/>}>
+        <Layout header={<Header title={'Tags'}/>}>
             <Box>
                 <Text>Tags</Text>
             </Box>
