@@ -57,7 +57,7 @@ export default function Home({navigation}) {
         });
     }, []);
     return (
-        <Layout header={<Header title={'Home'} navigation={navigation}/>}>
+        <Layout navigation={navigation} header={<Header title={'Home'} navigation={navigation}/>}>
             <Box>
                 {expensesStatistic &&
                     <>

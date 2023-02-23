@@ -11,6 +11,9 @@ import {AuthContext} from "../hooks/useAuth";
 import {AUTH_TOKEN} from "@env";
 import axiosClient from "../config/httpRequest.config";
 import LoadingPage from "../components/LoadingPage";
+import Expenses from "../pages/Expenses";
+import Notes from "../pages/Notes";
+import Tags from "../pages/Tags";
 
 
 export default function AuthProvider() {
@@ -60,14 +63,12 @@ export default function AuthProvider() {
 
             try {
                 userToken = await SecureStore.getItemAsync(AUTH_TOKEN);
-                console.log('userToken',userToken);
                 // setIsLoading(true);
                 dispatch({type: 'SET_LOADING', isLoading: true});
                 axiosClient
                     .get("/me")
                     .then((response) => {
                         if (response.data) {
-                            console.log(response.data);
                             // setUser(response.data);
                         } else {
                             // setUser(null);
@@ -75,7 +76,7 @@ export default function AuthProvider() {
                     })
                     .catch((err) => {
                         // setUser(null);
-                        if(state.userToken) {
+                        if (state.userToken) {
                             toast.show({
                                 title: `Erro ao carregar usuário`
                             });
@@ -110,7 +111,7 @@ export default function AuthProvider() {
             },
             signOut: async () => {
                 await SecureStore.deleteItemAsync(AUTH_TOKEN);
-                dispatch({type: 'SIGN_OUT'})
+                dispatch({type: 'SIGN_OUT'});
             },
             signUp: async (data) => {
                 // In a production app, we need to send user data to server and get a token
@@ -122,7 +123,7 @@ export default function AuthProvider() {
             },
             getToken: () => {
                 try {
-                    return state.userToken
+                    return state.userToken;
                 } catch (e) {
                     throw e;
                 }
@@ -143,6 +144,9 @@ export default function AuthProvider() {
                 ) : (
                     <Stack.Navigator initialRouteName="Home" screenOptions={{animation: "none", headerShown: false}}>
                         <Stack.Screen name="Home" component={Home}/>
+                        <Stack.Screen name="Expenses" component={Expenses}/>
+                        <Stack.Screen name="Notes" component={Notes}/>
+                        <Stack.Screen name="Tags" component={Tags}/>
                     </Stack.Navigator>
                 )}
             </NavigationContainer>}

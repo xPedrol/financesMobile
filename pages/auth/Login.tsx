@@ -53,7 +53,6 @@ export default function Login({navigation}) {
                     }
                 });
             } else {
-                console.error(err)
                 toast.show({
                     render: () => {
                         return <Box bg="red.500" px="2" py="1" rounded="sm" mb={5}>

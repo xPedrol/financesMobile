@@ -1,8 +1,10 @@
 import {Box, ScrollView, useColorModeValue} from "native-base";
+import MenuBar from "./MenuBar.component";
+import {useAuth} from "../hooks/useAuth";
 
-export default function Layout({children, header, ...props}) {
+export default function Layout({children, navigation ,header, ...props}) {
     const bg = useColorModeValue("warmGray.50", "#111111");
-
+    const {getToken} = useAuth()
     return (
         <Box bg={bg} {...props} flex={1}>
             <ScrollView>
@@ -13,6 +15,7 @@ export default function Layout({children, header, ...props}) {
                     {children}
                 </Box>
             </ScrollView>
+            {getToken() && <MenuBar navigation={navigation}/>}
         </Box>
     );
 }
