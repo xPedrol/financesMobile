@@ -1,4 +1,4 @@
-import {Box, Icon, VStack} from "native-base";
+import {Box, Fab, Icon, useColorModeValue, VStack} from "native-base";
 import Layout from "../components/Layout";
 import Header from "../components/Header";
 import {useEffect, useState} from "react";
@@ -8,19 +8,20 @@ import {apiExpensesStatistic} from "../services/expenseStatistic.service";
 import dayjs from "dayjs";
 import StatCard from "../components/StatCard.component";
 import currentFormat from "../utils/currentFormat.utils";
-import {MaterialIcons} from "@expo/vector-icons";
+import {AntDesign, MaterialIcons} from "@expo/vector-icons";
 import balance from "../utils/numbersBalance.utils";
 import {IExpensesGroup} from "../models/ExpensesGroup.model";
 import {generateExpensesGroup} from "../utils/groupBy.utils";
 import ExpensesDetailedView from "../components/ExpensesDetailedView.component";
 
 export default function Expenses({navigation}) {
+    const bg = useColorModeValue('white', '#1e1d1d');
     const [expensesGroup, setExpensesGroup] = useState<IExpensesGroup[] | null>(null);
     const [expensesCount, setExpensesCount] = useState<number>(0);
     const [expensesStatistic, setExpensesStatistic] = useState<IExpenseStatistic | null>(null);
     const [monthOptions, setMonthOptions] = useState<string[]>([]);
     const [page, setPage] = useState<number>(1);
-    const [monthFilter,setMonthFilter] = useState<string | null>(null)
+    const [monthFilter, setMonthFilter] = useState<string | null>(null);
     useEffect(() => {
         const year = dayjs().year();
         const newOptions = [];
@@ -35,7 +36,7 @@ export default function Expenses({navigation}) {
         } else {
             newOptions.push(...monthOptions);
         }
-        if(!monthFilter) {
+        if (!monthFilter) {
             setMonthFilter(`${dayjs().month() + 1}-01-${dayjs().year()}`);
         }
         setMonthOptions(newOptions);
@@ -52,27 +53,31 @@ export default function Expenses({navigation}) {
         });
     }, []);
     return (
-        <Layout header={<Header title={'Expenses'}/>}>
-            <Box>
-                {expensesStatistic && (
-                    <VStack alignItems={'center'} space={'md'}>
-                        <StatCard stat={currentFormat(expensesStatistic.gains)} status={'gain'}
-                                  title={'Gains'}
-                                  icon={<Icon as={MaterialIcons} name="attach-money" size="3xl"/>}/>
-                        <StatCard stat={currentFormat(expensesStatistic.losses)} status={'loss'}
-                                  title={'Losses'}
-                                  icon={<Icon as={MaterialIcons} name="money-off" size="3xl"/>}/>
-                        <StatCard stat={currentFormat(balance([expensesStatistic.gains, expensesStatistic.losses]))}
-                                  status={balance([expensesStatistic.gains, expensesStatistic.losses]) < 0 ? 'loss' : 'gain'}
-                                  title={'Balance'}
-                                  icon={<Icon as={MaterialIcons} name="account-balance" size="3xl"/>}/>
-                    </VStack>
-                )}
-                {expensesGroup && (
-                    <ExpensesDetailedView
-                        expensesGroup={expensesGroup}/>
-                )}
-            </Box>
-        </Layout>
+        <>
+            <Layout header={<Header title={'Expenses'}/>}>
+                <Box>
+                    {expensesStatistic && (
+                        <VStack alignItems={'center'} space={'md'}>
+                            <StatCard stat={currentFormat(expensesStatistic.gains)} status={'gain'}
+                                      title={'Gains'}
+                                      icon={<Icon as={MaterialIcons} name="attach-money" size="3xl"/>}/>
+                            <StatCard stat={currentFormat(expensesStatistic.losses)} status={'loss'}
+                                      title={'Losses'}
+                                      icon={<Icon as={MaterialIcons} name="money-off" size="3xl"/>}/>
+                            <StatCard stat={currentFormat(balance([expensesStatistic.gains, expensesStatistic.losses]))}
+                                      status={balance([expensesStatistic.gains, expensesStatistic.losses]) < 0 ? 'loss' : 'gain'}
+                                      title={'Balance'}
+                                      icon={<Icon as={MaterialIcons} name="account-balance" size="3xl"/>}/>
+                        </VStack>
+                    )}
+                    {expensesGroup && (
+                        <ExpensesDetailedView
+                            expensesGroup={expensesGroup}/>
+                    )}
+                </Box>
+            </Layout>
+            <Fab renderInPortal={false} shadow={2} size="sm" bottom={100} variant={'solid'} colorScheme={'gray'} onPress={() => navigation.navigate('Expense')}
+                 icon={<Icon color="white" as={AntDesign} name="plus" size="sm"/>}/>
+        </>
     );
 }

@@ -3,13 +3,35 @@ import {StatusBar} from "react-native";
 import {useAuth} from "../hooks/useAuth";
 import {MaterialIcons} from "@expo/vector-icons";
 import {useNavigation} from "@react-navigation/native";
+import {ReactNode} from "react";
+type BackButtonProps = {
+    goBackTo: string
+}
+const BackButton = ({goBackTo}:BackButtonProps) => {
+    const btnHeaderColor = useColorModeValue('gray.900', 'gray.100');
 
+    const navigation = useNavigation();
+    return (
+        <Button
+            onPress={() => navigation.goBack()}
+            variant="ghost"
+            _text={{
+                color: btnHeaderColor,
+            }}
+            size={'lg'}
+            borderColor={btnHeaderColor}
+            startIcon={<Icon as={MaterialIcons} color={btnHeaderColor} name="arrow-back"/>}
+        >
+        </Button>
+    );
+};
 type HeaderProps = {
     title: string
-    goBack?: boolean
     goBackTo?: string
+    showMenuButtons?: boolean
+    backButton?: ReactNode
 };
-const Header = ({title}: HeaderProps) => {
+const Header = ({title, goBackTo, showMenuButtons = true}: HeaderProps) => {
     const {
         colorMode,
         toggleColorMode,
@@ -33,20 +55,35 @@ const Header = ({title}: HeaderProps) => {
         <>
             <StatusBar barStyle={colorMode === 'light' ? 'dark-content' : 'light-content'} backgroundColor={bg}/>
             <Flex bg={bg} px={'20px'} h={'80px'} direction="row" align="center" justify={'space-between'}>
-                <Text fontSize={'15px'} fontFamily={'Inter900'}>{title}</Text>
-                <Flex direction={'row'}>
-                    <Button mr={'7px'} size={'sm'} colorScheme={'text'} variant={'outline'} onPress={toggleColorMode}
-                            _text={{
-                                color: btnHeaderColor,
-                            }}
-                            borderColor={btnHeaderColor}>Theme</Button>
-                    {getToken() &&
-                        <Button size={'sm'} colorScheme={'text'} variant={'outline'}
-                                onPress={onOpen} _text={{
-                            color: btnHeaderColor,
-                        }} borderColor={btnHeaderColor}>User</Button>
+                <Flex direction={'row'} alignItems={'center'}>
+                    {goBackTo ?
+                        <>
+                            <BackButton goBackTo={goBackTo}/>
+                            <Text fontSize={'15px'} fontFamily={'Inter900'}
+                                  onPress={() => navigation.goBack()}>{title}</Text>
+                        </>
+                        :
+                        <Text fontSize={'15px'} fontFamily={'Inter900'}>{title}</Text>
                     }
+
                 </Flex>
+                {showMenuButtons &&
+                    <Flex direction={'row'}>
+                        <Button mr={'7px'} size={'sm'} colorScheme={'text'} variant={'outline'}
+                                onPress={toggleColorMode}
+                                _text={{
+                                    color: btnHeaderColor,
+                                }}
+                                borderColor={btnHeaderColor}>Theme</Button>
+                        {getToken() &&
+                            <Button size={'sm'} colorScheme={'text'} variant={'outline'}
+                                    onPress={onOpen} _text={{
+                                color: btnHeaderColor,
+                            }} borderColor={btnHeaderColor}>User</Button>
+                        }
+                    </Flex>
+                }
+
             </Flex>
             <Actionsheet isOpen={isOpen} onClose={onClose}>
                 <Actionsheet.Content>

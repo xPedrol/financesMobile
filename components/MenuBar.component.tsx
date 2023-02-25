@@ -26,17 +26,12 @@ const menuItems = [
     }
 ];
 export default function MenuBar() {
-    const {
-        colorMode,
-        toggleColorMode,
-    } = useColorMode();
     const navigation = useNavigation();
     const route = useRoute();
     const goTo = (page: string) => {
         navigation.navigate(page);
     };
     const bg = useColorModeValue('white', '#1e1d1d');
-    const btnHeaderColor = useColorModeValue('gray.900', 'gray.100');
     return (
         <Box bg={bg} zIndex={999} w={'100%'} h={'80px'}>
             <Flex flex={1} direction={'row'} alignItems={'stretch'} justify={'space-around'} h={'100%'}>
@@ -45,7 +40,6 @@ export default function MenuBar() {
                         return (
                             <Flex key={item.page} direction={'column'} justifyContent={'center'} alignItems={'center'} h={'100%'}>
                                 <Icon color={route.name === item.page?'white':'gray.500'} onPress={() => goTo(item.page)} as={MaterialIcons} size="8" name={item.icon}/>
-                                {/*<Text fontSize={'xs'}>{item.name}</Text>*/}
                             </Flex>
                         )
                     })

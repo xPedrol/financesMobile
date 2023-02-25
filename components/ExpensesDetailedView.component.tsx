@@ -19,10 +19,17 @@ const ExpensesDetailedView = ({expensesGroup}: ExpensesDetailedViewProps) => {
                     <Text mt={35}>{formatNumbersBalanceDate(group.date)}</Text>
                     <Divider/>
                         {group.expenses.map((expense) => (
-                            <Box key={expense.id} mb={8}>
+                            <Box key={expense.id} mb={8} mt={2}>
                                 <Flex w={'100%'} direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
                                     <Text>{expense.tag?.name ?? '---'}</Text>
                                     <Flex direction={'row'}>
+                                        <Button
+                                            colorScheme={"gray"}
+                                            variant={"ghost"}
+                                            size={"xs"}
+                                        >
+                                            <Icon color={'gray.400'} size={5} as={MaterialIcons} name={'edit'}/>
+                                        </Button>
                                         <Button
                                             colorScheme={"red"}
                                             variant={"ghost"}

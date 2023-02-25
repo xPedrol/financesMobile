@@ -21,7 +21,7 @@ import {MaterialIcons} from "@expo/vector-icons";
 import {useState} from "react";
 import {Keyboard} from "react-native";
 
-type formData = {
+type FormData = {
     email: string;
     password: string;
 }
@@ -29,10 +29,10 @@ export default function Login({navigation}) {
     const titleBg = useColorModeValue('gray.200', '#1e1d1d');
     const {signIn} = useAuth();
     const [loginLoading, setLoginLoading] = useState<boolean>(false);
-    const {control, handleSubmit, formState: {errors}} = useForm<formData>();
+    const {control, handleSubmit, formState: {errors}} = useForm<FormData>();
     const [show, setShow] = useState(false);
     const toast = useToast();
-    const onSubmit = async (data: formData) => {
+    const onSubmit = async (data: FormData) => {
         setLoginLoading(true);
         signIn(data).then((res) => {
             if (res.data.token) {

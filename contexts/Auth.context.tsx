@@ -15,6 +15,7 @@ import Expenses from "../pages/Expenses";
 import Notes from "../pages/Notes";
 import Tags from "../pages/Tags";
 import ConnectionError from "../pages/ConectionError";
+import Expense from "../pages/Expense";
 
 type ReducerState = {
     isLoading: boolean;
@@ -93,7 +94,7 @@ export default function AuthProvider() {
                             });
                             if (err && err.response && err.response.status === 403) {
                                 authContext.signOut();
-                            }else{
+                            } else {
                                 dispatch({type: 'SET_ERROR', hasError: true});
                             }
                         }
@@ -167,6 +168,10 @@ export default function AuthProvider() {
                         <>
                             <Stack.Screen name="Home" component={Home}/>
                             <Stack.Screen name="Expenses" component={Expenses}/>
+                            <Stack.Screen name="Expense" component={Expense} options={{
+                                animation: "slide_from_right"
+                            }
+                            }/>
                             <Stack.Screen name="Notes" component={Notes}/>
                             <Stack.Screen name="Tags" component={Tags}/>
                         </>
