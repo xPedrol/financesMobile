@@ -1,4 +1,4 @@
-import {Box, Fab, Icon, useColorModeValue, VStack} from "native-base";
+import {Box, Fab, Icon, Spinner, useColorModeValue, VStack} from "native-base";
 import Layout from "../components/Layout";
 import Header from "../components/Header";
 import {useEffect, useState} from "react";
@@ -13,16 +13,18 @@ import balance from "../utils/numbersBalance.utils";
 import {IExpensesGroup} from "../models/ExpensesGroup.model";
 import {generateExpensesGroup} from "../utils/groupBy.utils";
 import ExpensesDetailedView from "../components/ExpensesDetailedView.component";
+import {Text} from "react-native";
+import LoadingRequest from "../components/LoadingRequest.component";
 
-export default function Expenses({navigation}) {
-    const bg = useColorModeValue('white', '#1e1d1d');
+export default function Expenses({navigation, route}) {
     const [expensesGroup, setExpensesGroup] = useState<IExpensesGroup[] | null>(null);
     const [expensesCount, setExpensesCount] = useState<number>(0);
     const [expensesStatistic, setExpensesStatistic] = useState<IExpenseStatistic | null>(null);
     const [monthOptions, setMonthOptions] = useState<string[]>([]);
-    const [page, setPage] = useState<number>(1);
     const [monthFilter, setMonthFilter] = useState<string | null>(null);
+    const [expenseLoading, setExpenseLoading] = useState<boolean>(true)
     useEffect(() => {
+        setExpenseLoading(true)
         const year = dayjs().year();
         const newOptions = [];
         if (monthOptions.length === 0) {
@@ -40,9 +42,13 @@ export default function Expenses({navigation}) {
             setMonthFilter(`${dayjs().month() + 1}-01-${dayjs().year()}`);
         }
         setMonthOptions(newOptions);
-        apiExpenses().then((res) => {
+        apiExpenses({
+            page: 0,
+            perPage: 1000
+        }).then((res) => {
+            console.log(res)
             setExpensesGroup(generateExpensesGroup(res.data));
-        });
+        }).finally(() => setExpenseLoading(false));
         apiExpenseCount().then((res) => {
             setExpensesCount(res.data);
         });
@@ -51,7 +57,7 @@ export default function Expenses({navigation}) {
         }).then((res) => {
             setExpensesStatistic(res.data);
         });
-    }, []);
+    }, [route]);
     return (
         <>
             <Layout header={<Header title={'Expenses'}/>}>
@@ -70,13 +76,19 @@ export default function Expenses({navigation}) {
                                       icon={<Icon as={MaterialIcons} name="account-balance" size="3xl"/>}/>
                         </VStack>
                     )}
-                    {expensesGroup && (
-                        <ExpensesDetailedView
-                            expensesGroup={expensesGroup}/>
-                    )}
+                    {expenseLoading ? <LoadingRequest props={{mt: 10}} noTitle={true}/> :
+                        expensesGroup ?
+                            <ExpensesDetailedView
+                                expensesGroup={expensesGroup}/>
+                            :
+                            <Text>Not found</Text>
+                    }
                 </Box>
             </Layout>
-            <Fab renderInPortal={false} shadow={2} size="sm" bottom={100} variant={'solid'} colorScheme={'gray'} onPress={() => navigation.navigate('Expense')}
+            <Fab renderInPortal={false} shadow={2} size="sm" bottom={100} variant={'solid'} colorScheme={'gray'}
+                 onPress={() => navigation.navigate('Expense', {
+                     id: null
+                 })}
                  icon={<Icon color="white" as={AntDesign} name="plus" size="sm"/>}/>
         </>
     );

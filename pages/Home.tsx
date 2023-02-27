@@ -19,6 +19,7 @@ import {
     VictoryTheme
 } from "victory-native";
 import {months} from "../utils/formatDate.utils";
+import LoadingRequest from "../components/LoadingRequest.component";
 
 const NegativeAwareTickLabel = props => {
     const {
@@ -39,11 +40,13 @@ const NegativeAwareTickLabel = props => {
     );
 };
 export default function Home({navigation}) {
+    const [loadingChart, setChartLoading] = useState<boolean>(true)
+    const [statisticsLoading, setStatisticsLoading] = useState<boolean>(true)
     const bgBar = useColorModeValue("#0891b2", "#0891b2")
     const textBar = useColorModeValue("black", "white")
-    const victoryBarStyle =  {
+    const victoryBarStyle = {
         data: {
-            color:textBar,
+            color: textBar,
             fill: bgBar,
             fillOpacity: 1,
             strokeWidth: 3
@@ -58,13 +61,15 @@ export default function Home({navigation}) {
     const [noteCount, setNoteCount] = useState<number>(0);
     const [monthsBalance, setMonthsBalance] = useState<any | null>(null);
     useEffect(() => {
+        setChartLoading(true);
+        setStatisticsLoading(true);
         apiExpensesStatistic(
             {
                 unit: "year"
             }
         ).then((res) => {
             setExpensesStatistic(res.data);
-        });
+        }).finally(() => setStatisticsLoading(false));
 
         apiNotesCount().then((res) => {
             setNoteCount(res.data);
@@ -87,85 +92,69 @@ export default function Home({navigation}) {
                 }
             }
             setMonthsBalance(aux);
-        });
+        }).finally(() => setChartLoading(false));
     }, []);
     return (
         <Layout header={<Header title={'Home'}/>}>
             <Box>
-                {expensesStatistic &&
-                    <>
-                        <Text mb={'20px'}>Valores refentes ao ano atual</Text>
-                        <VStack alignItems={'center'} space={'md'}>
-                            <StatCard stat={currentFormat(expensesStatistic.gains)} status={'gain'}
-                                      title={'Gains'}
-                                      icon={<Icon as={MaterialIcons} name="attach-money" size="3xl"/>}/>
-                            <StatCard stat={currentFormat(expensesStatistic.losses)} status={'loss'}
-                                      title={'Losses'}
-                                      icon={<Icon as={MaterialIcons} name="money-off" size="3xl"/>}/>
-                            <StatCard stat={currentFormat(balance([expensesStatistic.gains, expensesStatistic.losses]))}
-                                      status={balance([expensesStatistic.gains, expensesStatistic.losses]) < 0 ? 'loss' : 'gain'}
-                                      title={'Balance'}
-                                      icon={<Icon as={MaterialIcons} name="account-balance" size="3xl"/>}/>
-                            <StatCard stat={noteCount} status={'note'}
-                                      title={'Notes'}
-                                      icon={<Icon as={MaterialIcons} name="sticky-note-2" size="3xl"/>}/>
-                        </VStack>
-                    </>
+                {
+                    statisticsLoading ? <LoadingRequest title="Loading statistics..."/>
+                        :
+                        expensesStatistic ?
+                            <>
+                                <Text mb={'20px'}>Valores refentes ao ano atual</Text>
+                                <VStack alignItems={'center'} space={'md'}>
+                                    <StatCard stat={currentFormat(expensesStatistic.gains)} status={'gain'}
+                                              title={'Gains'}
+                                              icon={<Icon as={MaterialIcons} name="attach-money" size="3xl"/>}/>
+                                    <StatCard stat={currentFormat(expensesStatistic.losses)} status={'loss'}
+                                              title={'Losses'}
+                                              icon={<Icon as={MaterialIcons} name="money-off" size="3xl"/>}/>
+                                    <StatCard
+                                        stat={currentFormat(balance([expensesStatistic.gains, expensesStatistic.losses]))}
+                                        status={balance([expensesStatistic.gains, expensesStatistic.losses]) < 0 ? 'loss' : 'gain'}
+                                        title={'Balance'}
+                                        icon={<Icon as={MaterialIcons} name="account-balance" size="3xl"/>}/>
+                                    <StatCard stat={noteCount} status={'note'}
+                                              title={'Notes'}
+                                              icon={<Icon as={MaterialIcons} name="sticky-note-2" size="3xl"/>}/>
+                                </VStack>
+                            </>
+                            :
+                            <Text>Not found</Text>
                 }
-                {monthsBalance &&
-                    <>
-                        <Text my={'20px'}>Gastos referentes ao ano atual</Text>
-                        <ScrollView horizontal={true}>
-                            <View>
-                                <VictoryChart width={1000}>
-                                    <VictoryGroup data={monthsBalance} x="month" y="value">
-                                        <VictoryBar style={victoryBarStyle} labels={({ datum }) => `${currentFormat(datum.value)}`} x="month" y="value"/>
-                                        <VictoryBar x="month" y="value"
-                                                    labels={({ datum }) => `${datum.month}`}
-                                                    style={victoryBarStyle}
-                                                    labelComponent={<NegativeAwareTickLabel />}
-                                        />
-                                    </VictoryGroup>
+                {
+                    statisticsLoading ? <LoadingRequest title="Loading Chart..."/>
+                        :
+                        monthsBalance ? <>
+                                <Text my={'20px'}>Gastos referentes ao ano atual</Text>
+                                <ScrollView horizontal={true}>
+                                    <View>
+                                        <VictoryChart width={1000}>
+                                            <VictoryGroup data={monthsBalance} x="month" y="value">
+                                                <VictoryBar style={victoryBarStyle}
+                                                            labels={({datum}) => `${currentFormat(datum.value)}`} x="month"
+                                                            y="value"/>
+                                                <VictoryBar x="month" y="value"
+                                                            labels={({datum}) => `${datum.month}`}
+                                                            style={victoryBarStyle}
+                                                            labelComponent={<NegativeAwareTickLabel/>}
+                                                />
+                                            </VictoryGroup>
 
-                                    <VictoryAxis
-                                        style={{
-                                            tickLabels: { fill: "none" }
-                                        }}
-                                    />
-                                </VictoryChart>
-                                {/*<VictoryChart  animate={{*/}
-                                {/*    duration: 500,*/}
-                                {/*    onLoad: {duration: 1000}*/}
-                                {/*}} width={1000}>*/}
-                                {/*    <VictoryBar style={{*/}
-                                {/*        data: {*/}
-                                {/*            color:textBar,*/}
-                                {/*            fill: bgBar,*/}
-                                {/*            fillOpacity: 1,*/}
-                                {/*            strokeWidth: 3*/}
-                                {/*        },*/}
-                                {/*        labels: {*/}
-                                {/*            fontSize: 12,*/}
-                                {/*            fill: textBar*/}
-                                {/*        }*/}
-                                {/*    }} labels={({ datum }) => `${datum.value}`} data={monthsBalance} x="month" y="value"/>*/}
-                                {/*    <VictoryAxis*/}
-                                {/*        style={{*/}
-                                {/*            axis: { stroke: textBar },*/}
-                                {/*            axisLabel: { fontSize: 18, padding: 30, fill: textBar },*/}
-                                {/*            ticks: { stroke: textBar, size: 5, },*/}
-                                {/*            tickLabels: { fontSize: 12, padding: 5, fill: textBar }*/}
-                                {/*        }} />*/}
-                                {/*    <VictoryAxis style={{*/}
-                                {/*        axis: { stroke: "transparent" },*/}
-                                {/*        axisLabel: { fontSize: 18, padding: 30, fill: textBar },*/}
-                                {/*        tickLabels: { fontSize: 12, fill: textBar }*/}
-                                {/*    }}  dependentAxis/>*/}
-                                {/*</VictoryChart>*/}
-                            </View>
-                        </ScrollView>
-                    </>
+                                            <VictoryAxis
+                                                style={{
+                                                    tickLabels: {fill: "none"}
+                                                }}
+                                            />
+                                        </VictoryChart>
+                                    </View>
+                                </ScrollView>
+                            </>
+                            :
+                            <Text>Not Found</Text>
                 }
+
             </Box>
         </Layout>
     );
